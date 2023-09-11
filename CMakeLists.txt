@@ -38,6 +38,7 @@ option(USE_GPGME "Build with support for encrypted journals" OFF)
 option(BUILD_LIBRARY "Build and install Ledger as a library" ON)
 option(BUILD_DOCS "Build and install documentation" OFF)
 option(BUILD_WEB_DOCS "Build version of documentation suitable for viewing online" OFF)
+option(STATIC_LINKING "Statically link all dependencies" OFF)
 
 if (BUILD_DEBUG)
   set(CMAKE_BUILD_TYPE Debug)
@@ -79,6 +80,19 @@ if (USE_PYTHON)
   endif()
 else()
   set(HAVE_BOOST_PYTHON 0)
+endif()
+
+
+if (STATIC_LINKING)
+  if (BUILD_LIBRARY)
+    message(ERROR "Can not statically link with BUILD_LIBRARY=ON.")
+  endif()
+
+  set(Boost_USE_STATIC_LIBS ON)
+  find_package(ICU COMPONENTS uc i18n data REQUIRED)
+  add_library(icuuc ALIAS ICU::uc)
+  add_library(icudata ALIAS ICU::data)
+  add_library(icui18n ALIAS ICU::i18n)
 endif()
 
 # Set BOOST_ROOT to help CMake to find the right Boost version

@@ -274,6 +274,10 @@ class PrepareBuild(CommandLineApp):
                       type='int', action='store', dest='jobs',
                       default=1, help='Allow N make jobs at once')
 
+        op.add_option('', '--icu', metavar='ICU_ROOT',
+                      action="store", dest="icu_root",
+                      help='Set ICU library root (ex: "--icu=/usr/local")')
+
         op.add_option('', '--boost', metavar='BOOST_ROOT',
                       action="store", dest="boost_root",
                       help='Set Boost library root (ex: "--boost=/usr/local")')
@@ -305,6 +309,9 @@ class PrepareBuild(CommandLineApp):
                       help='Enable Python support')
         op.add_option('', '--no-python', action='store_false', dest='python',
                       help='Disable python support (default)')
+        op.add_option('', '--static', action='store_true', dest='static',
+                      default=False,
+                      help='Statically link all libraries')
         op.add_option('', '--prefix', metavar='DIR', action="store",
                       dest="prefix_dir", help='Use custom installation prefix')
         op.add_option('', '--products', metavar='DIR', action="store",
@@ -786,6 +793,10 @@ class PrepareBuild(CommandLineApp):
             self.configure_args.append('-DUSE_DOXYGEN=1')
         if self.options.python:
             self.configure_args.append('-DUSE_PYTHON=1')
+        if self.options.static:
+            self.configure_args.append('-DBUILD_LIBRARY=off')
+            self.configure_args.append('-DSTATIC_LINKING=1')
+            #self.configure_args.append('-DBUILD_SHARED_LIBS=off')
 
         if system.startswith('CYGWIN'):
             self.configure_args.append('-G')
@@ -913,6 +924,9 @@ class PrepareBuild(CommandLineApp):
                 elif var == 'LDFLAGS':
                     conf_args.append('-DCMAKE_EXE_LINKER_FLAGS=%s' %
                                      self.envvars[var])
+
+        if self.options.icu_root:
+            conf_args.append('-DICU_ROOT=%s' % self.options.icu_root)
 
         if self.options.boost_root:
             conf_args.append('-DBOOST_ROOT=%s' %
